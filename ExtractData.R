@@ -17,12 +17,18 @@ library(keyring)
 library(dplyr)
 
 source("SurveyMonkeyFunctions.R")
+
+####################################### SET TOKEN USING PACKAGE KEYRING ###############################################
+#PUT YOUR SURVEY MONKEY AUTH TOKEN BELOW  
+#I HAVE STORED THE AUTH USING KEYRING
+#USING key_set(service,username) WHERE service = "SurveyMonkey" AND username = token
+
 service<-"SurveyMonkey"
 keys<-key_list()
-token<-keys$username[which(keys$service==service)]
-auth_token<-token
+auth_token<-keys$username[which(keys$service==service)]
 
 
+####################################################################################################################
 
 
 #####Get surveys #########
