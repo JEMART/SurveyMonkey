@@ -16,7 +16,7 @@ library(tidyverse)
 library(keyring)
 library(dplyr)
 
-source("SurveyMonkeyFunctions.R")
+source("Main functions\\SurveyMonkeyFunctions.R")
 
 ####################################### SET TOKEN USING PACKAGE KEYRING ###############################################
 #PUT YOUR SURVEY MONKEY AUTH TOKEN BELOW  
