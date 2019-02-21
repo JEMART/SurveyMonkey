@@ -13,10 +13,14 @@ library(tidyr)
 library(doParallel)
 library(parallel)
 library(tidyverse)
+library(keyring)
+library(dplyr)
 
 source("SurveyMonkeyFunctions.R")
-
-auth_token<-'QiecvSC9NGA2sEyvzfzDlEXmYL9kD.PiJQ7hDCOMmdiaMJgeA70Qw1A1QX.vgzkYtylv6riOTV8ip-TUsBxrBhoyFqN3wCn10XIqLSRdwrxtxW6RqG-jaiF4MB7Jrq6Z'
+service<-"SurveyMonkey"
+keys<-key_list()
+token<-keys$username[which(keys$service==service)]
+auth_token<-token
 
 
 
@@ -72,8 +76,8 @@ MetaData<-get_all_survey_meta(response_meta$pages[[3]])
 
 
 
+#Export file 
  
- #Replace choice_id for a column
   keycol <- "question"
   valuecol <- "answer"
   sm_colnames<-colnames(data)
@@ -118,25 +122,12 @@ MetaData<-get_all_survey_meta(response_meta$pages[[3]])
   CombColnames<-c(colnames(data[,1:22]),GetColnames)
   NewData<-data.frame(data[,1:22],DataLookUp)
   colnames(NewData)<-CombColnames
-  
-  #MetaData$choices_id[is.na(MetaData$choices_id)]<-(-1)
-  #MetaColnames<-c("question_rows_id","question_heading_text","choices_id","choices_text","choices_position")
-  #MetaDataJoin<-MetaData[,colnames(MetaData) %in% MetaColnames]
-  #data_long<-gather_(data, keycol, valuecol, gathercols)
-  #data_long$answer_join<-data_long$answer
-  #data_long$answer_join[substr(data_long$answer_join,1,1)=="-"] <-(-1)
-  
-  #data_long_join<-data_long %>% 
-   #      inner_join(MetaDataJoin,by=c("question"= "question_rows_id" ,"answer_join"="choices_id"))
-  
-  #data_long_join$return_answer<-data_long_join$choices_position
-  #data_long_join$return_answer[is.na( data_long_join$return_answer)] <-  data_long_join$answer[is.na( data_long_join$return_answer)]
  
  
   write.csv2(NewData,paste0("C:\\Users\\jespe\\Desktop\\DataLookUp.",Sys.Date(),".csv"))
 
 
-#
+
 
 
 #To get summaries
