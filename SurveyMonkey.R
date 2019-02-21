@@ -16,7 +16,7 @@ library(tidyverse)
 
 source("SurveyMonkeyFunctions.R")
 
-auth_token<-'QiecvSC9NGA2sEyvzfzDlEXmYL9kD.PiJQ7hDCOMmdiaMJgeA70Qw1A1QX.vgzkYtylv6riOTV8ip-TUsBxrBhoyFqN3wCn10XIqLSRdwrxtxW6RqG-jaiF4MB7Jrq6Z'
+auth_token<-'your token'
 
 
 
