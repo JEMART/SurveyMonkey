@@ -19,6 +19,58 @@ sm_get_surveys <- function(auth_token, page = 1, per_page = 250) {
 }
 
 ############################################################################
+sm_get_collector <- function(auth_token, survey_id) {
+  if (missing(auth_token)) {
+    auth_token <- readline('Enter your access token for SurveyMonkey: ')
+  }
+  auth <- paste("bearer", auth_token, sep=" ");
+  url <- paste0('https://api.surveymonkey.com/v3/surveys/',survey_id,'/collectors')
+  survey_list_response <- httr::GET(url=url, add_headers("Content-Type" = "application/json", "Authorization" = auth ))
+  
+  if (survey_list_response$status_code != 200) {
+    stop(paste('Bad response from server: ', httr::http_status(survey_list_response)))
+  }
+  json <- httr::content(survey_list_response, as = 'text')
+  responses <- jsonlite::fromJSON(json)
+  responses
+}
+
+############################################################################
+sm_get_message <- function(auth_token, survey_id,collector_id) {
+  if (missing(auth_token)) {
+    auth_token <- readline('Enter your access token for SurveyMonkey: ')
+  }
+  auth <- paste("bearer", auth_token, sep=" ");
+  url <- paste0('https://api.surveymonkey.com/v3/surveys/',survey_id,'/collectors/',collector_id,'/messages')
+  survey_list_response <- httr::GET(url=url, add_headers("Content-Type" = "application/json", "Authorization" = auth ))
+  
+  if (survey_list_response$status_code != 200) {
+    stop(paste('Bad response from server: ', httr::http_status(survey_list_response)))
+  }
+  json <- httr::content(survey_list_response, as = 'text')
+  responses <- jsonlite::fromJSON(json)
+  responses
+}
+
+#############################################################################
+sm_get_recipient_info <- function(auth_token, survey_id,collector_id,page,per_page = 100) {
+  if (missing(auth_token)) {
+    auth_token <- readline('Enter your access token for SurveyMonkey: ')
+  }
+  auth <- paste("bearer", auth_token, sep=" ");
+  url <- paste0('https://api.surveymonkey.com/v3/surveys/',survey_id,'/collectors/',collector_id,'/recipients?include=survey_response_status,mail_status,custom_fields&page=', page, '&per_page=', per_page)
+  survey_list_response <- httr::GET(url=url, add_headers("Content-Type" = "application/json", "Authorization" = auth ))
+  
+  if (survey_list_response$status_code != 200) {
+    stop(paste('Bad response from server: ', httr::http_status(survey_list_response)))
+  }
+  json <- httr::content(survey_list_response, as = 'text')
+  responses <- jsonlite::fromJSON(json)
+  responses
+}
+
+
+################################################################################
 
 sm_get_responses <- function(auth_token, survey_id,page = 1, per_page = 1000) {
   if (missing(auth_token)) {
