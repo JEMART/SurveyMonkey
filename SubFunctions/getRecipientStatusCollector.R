@@ -1,5 +1,5 @@
-############  Get Recipients #################
-getRecipients<-function(survey_id,collector_id,page){
+############  Get Recipient status for a collector in a survey #################
+getRecipientsCollector<-function(survey_id,collector_id){
   base<-sm_get_recipient_info(auth_token = auth_token,
                               survey_id = survey_id,
                               collector_id = collector_id,
