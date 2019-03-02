@@ -11,7 +11,7 @@ answers_page<-function(x,m){
   #doParallel::registerDoParallel(cl)
  
   f<-foreach(i=x,m=msplit,.packages=c('foreach','dplyr')) %dopar% {
-    source("SubFunctions\\sm_answer_per_rec_spage.R")
+    source("C:\\Users\\jespe\\Dropbox\\Min R mapp\\Rprojects\\SurveyMonkeyExtract\\SubFunctions\\sm_answer_per_rec_spage.R")
     x<-i$questions
     meta<-apply(m,2,as.character)
     meta<-data.frame(t(data.frame(meta)))
