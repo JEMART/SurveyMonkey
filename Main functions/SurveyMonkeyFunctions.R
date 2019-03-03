@@ -272,9 +272,11 @@ get_all_survey_meta<-function(x) {  #x = response_meta$pages[[3]]
   }
   
   d<-unique(do.call(bind_rows,Meta))
-  d$question_rows_id<-ifelse(d$question_family == "multiple_choice", 
+  d$new_question_id<-ifelse(d$question_family == "multiple_choice", 
                              str_trim(paste0(d$question_id,".",d$choices_id)),
                              str_trim(paste0(d$question_id,".",d$rows_id)))
+  narows<-which(str_detect(d$new_question_id,"NA")==TRUE) 
+  d$new_question_id[narows]<-d$question_id[narows]
   
   d$rows_text[is.na(d$rows_text)]<-" "
   
@@ -284,6 +286,10 @@ get_all_survey_meta<-function(x) {  #x = response_meta$pages[[3]]
     
   
   d$question_heading_text<-mchoice
+  d$rows_position[is.na(d$rows_position)]<-0
+  d$choices_position[is.na(d$choices_position)]<-0
+  d$position_id<-str_trim(paste0(d$page,d$page_position,str_trim(d$rows_position),str_trim(d$choices_position)))
+  
   d
   
 }
@@ -294,27 +300,26 @@ get_all_survey_meta<-function(x) {  #x = response_meta$pages[[3]]
 
 #Get responses for all data pages
 
-answers_all_pages<-function(x,m){
+answers_all_pages<-function(x,m,Qm){
   
   #x<-responses 
   #m<-meta_per_page
-  lp<-function(n,x,m){
+  #Qm = MetaData (QuestionMetaData)
+  
+  lp<-function(n,x,m,Qm){
     source("C:\\Users\\jespe\\Dropbox\\Min R mapp\\Rprojects\\SurveyMonkeyExtract\\SubFunctions\\sm_answers_page.R")
-    answers_page(x[[n]]$data$pages,m[[n]])
+    answers_page(x[[n]]$data$pages,m[[n]],Qm)
     }
  
-  d<-foreach(n=1:length(x),.packages=c('doParallel')) %dopar% lp(n,x,m)
+  d<-foreach(n=1:length(x),.packages=c('doParallel','dplyr')) %dopar% lp(n,x,m,Qm)
   do.call(bind_rows,d)
   
 }
 
 
 #Get final data
-getFinalData<-function(data,MetaData=NULL,MapColumn=NULL){     #MapColumn c(question_heading_text,"question_rows_id",custom present)
-  if(is.null(MetaData) == TRUE) {
-    data
-  }else{
-    
+getFinalData<-function(data,MetaData,MapColumn="question_heading_text"){     #MapColumn c(question_heading_text,"question_rows_id",custom present)
+ 
     
     keycol <- "question"
     valuecol <- "answer"
@@ -325,34 +330,34 @@ getFinalData<-function(data,MetaData=NULL,MapColumn=NULL){     #MapColumn c(ques
     lookup_vals<-function(d,MetaData){
       
       x<-data.frame(choices_id=d)
-      x<-x %>% left_join(unique(data.frame(choices_id=MetaData$choices_id,choices_position=MetaData$choices_position)),by="choices_id") %>% select(choices_position)
+      x<-x %>% left_join(unique(data.frame(choices_id=MetaData$choices_id,choices_position=MetaData$choices_position.x)),by="choices_id") %>% select(choices_position)
       x<-as.character(x[,1])
       x[is.na(x)]<-d[is.na(x)]
       data.frame(choices_position=x)
     }
     
     dataForLookup<-data[23:length(sm_colnames)]
-    GetColOrder<-data.frame(question_rows_id=colnames(dataForLookup)) %>% 
-      right_join(MetaData,by="question_rows_id") %>%
-      select(question_rows_id,page,page_position)
+    GetColOrder<-data.frame(new_question_id=colnames(dataForLookup)) %>% 
+      right_join(MetaData,by="new_question_id") %>%
+      select(new_question_id,page.x,page_position.x)
     GetColOrder<-unique(GetColOrder)
-    GetColOrder$bind<-as.numeric(as.character(paste0(GetColOrder$page,GetColOrder$page_position)))
+    GetColOrder$bind<-as.numeric(as.character(paste0(GetColOrder$page,GetColOrder$page_position.x)))
     GetColOrder<-GetColOrder %>% arrange(GetColOrder$bind)
     
-    metaframe<-data.frame(question_rows_id=GetColOrder$question_rows_id,
-                          answer=rep(NA,length(GetColOrder$question_rows_id)))
+    metaframe<-data.frame(new_question_id=GetColOrder$new_question_id,
+                          answer=rep(NA,length(GetColOrder$new_question_id)))
     metaframe2<-data.frame(t(metaframe))
-    colnames(metaframe2)<-metaframe$question_rows_id
+    colnames(metaframe2)<-metaframe$new_question_id
     metaframe3<-metaframe2[2,]
     
     dataForLookup<-bind_rows(metaframe3,dataForLookup)
-    dataForLookup<-dataForLookup[GetColOrder$question_rows_id][-1,]
+    dataForLookup<-dataForLookup[GetColOrder$new_question_id][-1,]
     
     l<-apply(dataForLookup,2,lookup_vals,MetaData)
     DataLookUp<-bind_cols(l)
-    GetColnames<-data.frame(question_rows_id = names(dataForLookup)) %>% 
-      left_join(unique(data.frame(question_rows_id= MetaData$question_rows_id,
-                                  mapColumn=MetaData[,MapColumn])),by="question_rows_id") %>% 
+    GetColnames<-data.frame(new_question_id = names(dataForLookup)) %>% 
+      left_join(unique(data.frame(new_question_id= MetaData$new_question_id,
+                                  mapColumn=MetaData[,MapColumn])),by="new_question_id") %>% 
       select(mapColumn)  
     
     GetColnames<-as.character(GetColnames[,1])
@@ -361,6 +366,6 @@ getFinalData<-function(data,MetaData=NULL,MapColumn=NULL){     #MapColumn c(ques
     NewData<-data.frame(data[,1:22],DataLookUp)
     colnames(NewData)<-CombColnames
     NewData
-  }
+  
 }
 

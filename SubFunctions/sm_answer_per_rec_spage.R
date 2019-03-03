@@ -4,7 +4,7 @@ answer_per_rec_spage<-function(x) {
   #x<-responses[[1]]$data$pages[[100]]$questions[[26]]  #one recipient in survey page i.e. 18
   
   #Get all answers for each question on each survey page
-  
+ 
   answers_page<-foreach(q=x$id,a=x$answers) %dopar% data.frame(q,a)
   answers_page_bind<-do.call(bind_rows,answers_page)
   
